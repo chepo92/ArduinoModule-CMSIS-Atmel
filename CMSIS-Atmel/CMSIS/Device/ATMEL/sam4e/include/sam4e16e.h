@@ -2,7 +2,7 @@
 /*                  Atmel Microcontroller Software Support                      */
 /*                       SAM Software Package License                           */
 /* ---------------------------------------------------------------------------- */
-/* Copyright (c) 2015, Atmel Corporation                                        */
+/* Copyright (c) %copyright_year%, Atmel Corporation                                        */
 /*                                                                              */
 /* All rights reserved.                                                         */
 /*                                                                              */
@@ -41,10 +41,17 @@
 
 #ifdef __cplusplus
  extern "C" {
-#endif
+#endif 
 
 #if !(defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__))
 #include <stdint.h>
+#ifndef __cplusplus
+typedef volatile const uint32_t RoReg; /**< Read only 32-bit register (volatile const unsigned int) */
+#else
+typedef volatile       uint32_t RoReg; /**< Read only 32-bit register (volatile const unsigned int) */
+#endif
+typedef volatile       uint32_t WoReg; /**< Write only 32-bit register (volatile unsigned int) */
+typedef volatile       uint32_t RwReg; /**< Read-Write 32-bit register (volatile unsigned int) */
 #endif
 
 /* ************************************************************************** */
@@ -66,14 +73,14 @@ typedef enum IRQn
   PendSV_IRQn           = -2,  /**< 14 Cortex-M4 Pend SV Interrupt           */
   SysTick_IRQn          = -1,  /**< 15 Cortex-M4 System Tick Interrupt       */
 /******  SAM4E16E specific Interrupt Numbers *********************************/
-
+  
   SUPC_IRQn            =  0, /**<  0 SAM4E16E Supply Controller (SUPC) */
   RSTC_IRQn            =  1, /**<  1 SAM4E16E Reset Controller (RSTC) */
   RTC_IRQn             =  2, /**<  2 SAM4E16E Real Time Clock (RTC) */
   RTT_IRQn             =  3, /**<  3 SAM4E16E Real Time Timer (RTT) */
   WDT_IRQn             =  4, /**<  4 SAM4E16E Watchdog/Dual Watchdog Timer (WDT) */
   PMC_IRQn             =  5, /**<  5 SAM4E16E Power Management Controller (PMC) */
-  EFC0_IRQn            =  6, /**<  6 SAM4E16E Enhanced Embedded Flash Controller (EFC) */
+  EFC_IRQn             =  6, /**<  6 SAM4E16E Enhanced Embedded Flash Controller (EFC) */
   UART0_IRQn           =  7, /**<  7 SAM4E16E UART 0 (UART0) */
   PIOA_IRQn            =  9, /**<  9 SAM4E16E Parallel I/O Controller A (PIOA) */
   PIOB_IRQn            = 10, /**< 10 SAM4E16E Parallel I/O Controller B (PIOB) */
@@ -116,7 +123,7 @@ typedef struct _DeviceVectors
 {
   /* Stack pointer */
   void* pvStack;
-
+  
   /* Cortex-M handlers */
   void* pfnReset_Handler;
   void* pfnNMI_Handler;
@@ -141,7 +148,7 @@ typedef struct _DeviceVectors
   void* pfnRTT_Handler;    /*  3 Real Time Timer */
   void* pfnWDT_Handler;    /*  4 Watchdog/Dual Watchdog Timer */
   void* pfnPMC_Handler;    /*  5 Power Management Controller */
-  void* pfnEFC0_Handler;   /*  6 Enhanced Embedded Flash Controller */
+  void* pfnEFC_Handler;    /*  6 Enhanced Embedded Flash Controller */
   void* pfnUART0_Handler;  /*  7 UART 0 */
   void* pvReserved8;
   void* pfnPIOA_Handler;   /*  9 Parallel I/O Controller A */
@@ -205,7 +212,7 @@ void CAN0_Handler       ( void );
 void CAN1_Handler       ( void );
 void DACC_Handler       ( void );
 void DMAC_Handler       ( void );
-void EFC0_Handler       ( void );
+void EFC_Handler        ( void );
 void GMAC_Handler       ( void );
 void HSMCI_Handler      ( void );
 void PIOA_Handler       ( void );
@@ -239,11 +246,11 @@ void USART1_Handler     ( void );
 void WDT_Handler        ( void );
 
 /**
- * \brief Configuration of the Cortex-M4 Processor and Core Peripherals
+ * \brief Configuration of the Cortex-M4 Processor and Core Peripherals 
  */
 
-#define __CM4_REV              0x0001 /**< SAM4E16E core revision number ([15:8] revision number, [7:0] patch number) */
-#define __MPU_PRESENT          1      /**< SAM4E16E does provide a MPU */
+#define __CM4_REV              0x0000 /**< SAM4E16E core revision number ([15:8] revision number, [7:0] patch number) */
+#define __MPU_PRESENT          0      /**< SAM4E16E does not provide a MPU */
 #define __FPU_PRESENT          1      /**< SAM4E16E does provide a FPU */
 #define __NVIC_PRIO_BITS       4      /**< SAM4E16E uses 4 Bits for the Priority Levels */
 #define __Vendor_SysTickConfig 0      /**< Set to 1 if different SysTick Config is used */
@@ -271,6 +278,7 @@ void WDT_Handler        ( void );
 #include "component/can.h"
 #include "component/chipid.h"
 #include "component/cmcc.h"
+#include "component/crccu.h"
 #include "component/dacc.h"
 #include "component/dmac.h"
 #include "component/efc.h"
@@ -283,7 +291,6 @@ void WDT_Handler        ( void );
 #include "component/pmc.h"
 #include "component/pwm.h"
 #include "component/rstc.h"
-#include "component/rswdt.h"
 #include "component/rtc.h"
 #include "component/rtt.h"
 #include "component/smc.h"
@@ -298,6 +305,54 @@ void WDT_Handler        ( void );
 /*@}*/
 
 /* ************************************************************************** */
+/*   REGISTER ACCESS DEFINITIONS FOR SAM4E16E */
+/* ************************************************************************** */
+/** \addtogroup SAM4E16E_reg Registers Access Definitions */
+/*@{*/
+
+#include "instance/pwm.h"
+#include "instance/aes.h"
+#include "instance/can0.h"
+#include "instance/can1.h"
+#include "instance/gmac.h"
+#include "instance/crccu.h"
+#include "instance/smc.h"
+#include "instance/uart1.h"
+#include "instance/hsmci.h"
+#include "instance/udp.h"
+#include "instance/spi.h"
+#include "instance/tc0.h"
+#include "instance/tc1.h"
+#include "instance/tc2.h"
+#include "instance/usart0.h"
+#include "instance/usart1.h"
+#include "instance/twi0.h"
+#include "instance/twi1.h"
+#include "instance/afec0.h"
+#include "instance/afec1.h"
+#include "instance/dacc.h"
+#include "instance/acc.h"
+#include "instance/dmac.h"
+#include "instance/cmcc.h"
+#include "instance/matrix.h"
+#include "instance/pmc.h"
+#include "instance/uart0.h"
+#include "instance/chipid.h"
+#include "instance/efc.h"
+#include "instance/pioa.h"
+#include "instance/piob.h"
+#include "instance/pioc.h"
+#include "instance/piod.h"
+#include "instance/pioe.h"
+#include "instance/rstc.h"
+#include "instance/supc.h"
+#include "instance/rtt.h"
+#include "instance/wdt.h"
+#include "instance/rtc.h"
+#include "instance/gpbr.h"
+/*@}*/
+
+/* ************************************************************************** */
 /*   PERIPHERAL ID DEFINITIONS FOR SAM4E16E */
 /* ************************************************************************** */
 /** \addtogroup SAM4E16E_id Peripheral Ids Definitions */
@@ -309,7 +364,7 @@ void WDT_Handler        ( void );
 #define ID_RTT    ( 3) /**< \brief Real Time Timer (RTT) */
 #define ID_WDT    ( 4) /**< \brief Watchdog/Dual Watchdog Timer (WDT) */
 #define ID_PMC    ( 5) /**< \brief Power Management Controller (PMC) */
-#define ID_EFC0   ( 6) /**< \brief Enhanced Embedded Flash Controller (EFC) */
+#define ID_EFC    ( 6) /**< \brief Enhanced Embedded Flash Controller (EFC) */
 #define ID_UART0  ( 7) /**< \brief UART 0 (UART0) */
 #define ID_SMC    ( 8) /**< \brief Static Memory Controller (SMC) */
 #define ID_PIOA   ( 9) /**< \brief Parallel I/O Controller A (PIOA) */
@@ -355,12 +410,70 @@ void WDT_Handler        ( void );
 /** \addtogroup SAM4E16E_base Peripheral Base Address Definitions */
 /*@{*/
 
+#if (defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__))
+#define PWM        (0x40000000U) /**< \brief (PWM       ) Base Address */
+#define PDC_PWM    (0x40000100U) /**< \brief (PDC_PWM   ) Base Address */
+#define AES        (0x40004000U) /**< \brief (AES       ) Base Address */
+#define CAN0       (0x40010000U) /**< \brief (CAN0      ) Base Address */
+#define CAN1       (0x40014000U) /**< \brief (CAN1      ) Base Address */
+#define GMAC       (0x40034000U) /**< \brief (GMAC      ) Base Address */
+#define CRCCU      (0x40044000U) /**< \brief (CRCCU     ) Base Address */
+#define SMC        (0x40060000U) /**< \brief (SMC       ) Base Address */
+#define UART1      (0x40060600U) /**< \brief (UART1     ) Base Address */
+#define PDC_UART1  (0x40060700U) /**< \brief (PDC_UART1 ) Base Address */
+#define HSMCI      (0x40080000U) /**< \brief (HSMCI     ) Base Address */
+#define PDC_HSMCI  (0x40080100U) /**< \brief (PDC_HSMCI ) Base Address */
+#define UDP        (0x40084000U) /**< \brief (UDP       ) Base Address */
+#define SPI        (0x40088000U) /**< \brief (SPI       ) Base Address */
+#define PDC_SPI    (0x40088100U) /**< \brief (PDC_SPI   ) Base Address */
+#define TC0        (0x40090000U) /**< \brief (TC0       ) Base Address */
+#define PDC_TC0    (0x40090100U) /**< \brief (PDC_TC0   ) Base Address */
+#define TC1        (0x40094000U) /**< \brief (TC1       ) Base Address */
+#define PDC_TC1    (0x40094100U) /**< \brief (PDC_TC1   ) Base Address */
+#define TC2        (0x40098000U) /**< \brief (TC2       ) Base Address */
+#define USART0     (0x400A0000U) /**< \brief (USART0    ) Base Address */
+#define PDC_USART0 (0x400A0100U) /**< \brief (PDC_USART0) Base Address */
+#define USART1     (0x400A4000U) /**< \brief (USART1    ) Base Address */
+#define PDC_USART1 (0x400A4100U) /**< \brief (PDC_USART1) Base Address */
+#define TWI0       (0x400A8000U) /**< \brief (TWI0      ) Base Address */
+#define PDC_TWI0   (0x400A8100U) /**< \brief (PDC_TWI0  ) Base Address */
+#define TWI1       (0x400AC000U) /**< \brief (TWI1      ) Base Address */
+#define PDC_TWI1   (0x400AC100U) /**< \brief (PDC_TWI1  ) Base Address */
+#define AFEC0      (0x400B0000U) /**< \brief (AFEC0     ) Base Address */
+#define PDC_AFEC0  (0x400B0100U) /**< \brief (PDC_AFEC0 ) Base Address */
+#define AFEC1      (0x400B4000U) /**< \brief (AFEC1     ) Base Address */
+#define PDC_AFEC1  (0x400B4100U) /**< \brief (PDC_AFEC1 ) Base Address */
+#define DACC       (0x400B8000U) /**< \brief (DACC      ) Base Address */
+#define PDC_DACC   (0x400B8100U) /**< \brief (PDC_DACC  ) Base Address */
+#define ACC        (0x400BC000U) /**< \brief (ACC       ) Base Address */
+#define DMAC       (0x400C0000U) /**< \brief (DMAC      ) Base Address */
+#define CMCC       (0x400C4000U) /**< \brief (CMCC      ) Base Address */
+#define MATRIX     (0x400E0200U) /**< \brief (MATRIX    ) Base Address */
+#define PMC        (0x400E0400U) /**< \brief (PMC       ) Base Address */
+#define UART0      (0x400E0600U) /**< \brief (UART0     ) Base Address */
+#define PDC_UART0  (0x400E0700U) /**< \brief (PDC_UART0 ) Base Address */
+#define CHIPID     (0x400E0740U) /**< \brief (CHIPID    ) Base Address */
+#define EFC        (0x400E0A00U) /**< \brief (EFC       ) Base Address */
+#define PIOA       (0x400E0E00U) /**< \brief (PIOA      ) Base Address */
+#define PDC_PIOA   (0x400E0F68U) /**< \brief (PDC_PIOA  ) Base Address */
+#define PIOB       (0x400E1000U) /**< \brief (PIOB      ) Base Address */
+#define PIOC       (0x400E1200U) /**< \brief (PIOC      ) Base Address */
+#define PIOD       (0x400E1400U) /**< \brief (PIOD      ) Base Address */
+#define PIOE       (0x400E1600U) /**< \brief (PIOE      ) Base Address */
+#define RSTC       (0x400E1800U) /**< \brief (RSTC      ) Base Address */
+#define SUPC       (0x400E1810U) /**< \brief (SUPC      ) Base Address */
+#define RTT        (0x400E1830U) /**< \brief (RTT       ) Base Address */
+#define WDT        (0x400E1850U) /**< \brief (WDT       ) Base Address */
+#define RTC        (0x400E1860U) /**< \brief (RTC       ) Base Address */
+#define GPBR       (0x400E1890U) /**< \brief (GPBR      ) Base Address */
+#else
 #define PWM        ((Pwm    *)0x40000000U) /**< \brief (PWM       ) Base Address */
 #define PDC_PWM    ((Pdc    *)0x40000100U) /**< \brief (PDC_PWM   ) Base Address */
 #define AES        ((Aes    *)0x40004000U) /**< \brief (AES       ) Base Address */
 #define CAN0       ((Can    *)0x40010000U) /**< \brief (CAN0      ) Base Address */
 #define CAN1       ((Can    *)0x40014000U) /**< \brief (CAN1      ) Base Address */
 #define GMAC       ((Gmac   *)0x40034000U) /**< \brief (GMAC      ) Base Address */
+#define CRCCU      ((Crccu  *)0x40044000U) /**< \brief (CRCCU     ) Base Address */
 #define SMC        ((Smc    *)0x40060000U) /**< \brief (SMC       ) Base Address */
 #define UART1      ((Uart   *)0x40060600U) /**< \brief (UART1     ) Base Address */
 #define PDC_UART1  ((Pdc    *)0x40060700U) /**< \brief (PDC_UART1 ) Base Address */
@@ -396,7 +509,7 @@ void WDT_Handler        ( void );
 #define UART0      ((Uart   *)0x400E0600U) /**< \brief (UART0     ) Base Address */
 #define PDC_UART0  ((Pdc    *)0x400E0700U) /**< \brief (PDC_UART0 ) Base Address */
 #define CHIPID     ((Chipid *)0x400E0740U) /**< \brief (CHIPID    ) Base Address */
-#define EFC0       ((Efc    *)0x400E0A00U) /**< \brief (EFC0      ) Base Address */
+#define EFC        ((Efc    *)0x400E0A00U) /**< \brief (EFC       ) Base Address */
 #define PIOA       ((Pio    *)0x400E0E00U) /**< \brief (PIOA      ) Base Address */
 #define PDC_PIOA   ((Pdc    *)0x400E0F68U) /**< \brief (PDC_PIOA  ) Base Address */
 #define PIOB       ((Pio    *)0x400E1000U) /**< \brief (PIOB      ) Base Address */
@@ -409,7 +522,7 @@ void WDT_Handler        ( void );
 #define WDT        ((Wdt    *)0x400E1850U) /**< \brief (WDT       ) Base Address */
 #define RTC        ((Rtc    *)0x400E1860U) /**< \brief (RTC       ) Base Address */
 #define GPBR       ((Gpbr   *)0x400E1890U) /**< \brief (GPBR      ) Base Address */
-#define RSWDT      ((Rswdt  *)0x400E1900U) /**< \brief (RSWDT     ) Base Address */
+#endif /* (defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__)) */
 /*@}*/
 
 /* ************************************************************************** */
@@ -444,13 +557,9 @@ void WDT_Handler        ( void );
 /*   MISCELLANEOUS DEFINITIONS FOR SAM4E16E */
 /* ************************************************************************** */
 
-#define CHIP_JTAGID       (0x05B3703FUL)
-#define CHIP_CIDR         (0xA3CC0CE0UL)
-#define CHIP_EXID         (0x00120200UL)
-#define NB_CH_AFE0        (16UL)
-#define NB_CH_AFE1        (8UL)
-#define NB_CH_DAC         (2UL)
-#define USB_DEVICE_MAX_EP (8UL)
+#define CHIP_JTAGID (0x05B3703FUL)
+#define CHIP_CIDR (0xA3CC0CE0UL)
+#define CHIP_EXID (0x00120200UL)
 
 /* ************************************************************************** */
 /*   ELECTRICAL DEFINITIONS FOR SAM4E16E */
@@ -477,10 +586,6 @@ void WDT_Handler        ( void );
 #define CHIP_FREQ_FWS_3                 (80000000UL)  /**< \brief Maximum operating frequency when FWS is 3 */
 #define CHIP_FREQ_FWS_4                 (100000000UL) /**< \brief Maximum operating frequency when FWS is 4 */
 #define CHIP_FREQ_FWS_5                 (123000000UL) /**< \brief Maximum operating frequency when FWS is 5 */
-
-/* HYSTeresis levels: please refer to Electrical Characteristics */
-#define ACC_ACR_HYST_50MV_MAX	          (0x01UL)
-#define ACC_ACR_HYST_90MV_MAX           (0x11UL)
 
 #ifdef __cplusplus
 }
